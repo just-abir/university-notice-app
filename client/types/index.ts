@@ -18,6 +18,8 @@ export interface User {
   batch?: string;
   year?: 1 | 2 | 3 | 4 | 5;
   semester?: number;
+  phone?: string;
+  address?: string;
   // Teacher fields
   designation?: string;
   createdAt?: string;
@@ -32,7 +34,8 @@ export type AudienceType =
   | 'YEAR_FEMALE'
   | 'ALL_CSE'
   | 'ALL_CSE_FEMALE'
-  | 'CUSTOM_GROUP';
+  | 'CUSTOM_GROUP'
+  | 'SELECTED_STUDENTS';
 
 export interface TargetAudience {
   type: AudienceType;
@@ -42,6 +45,7 @@ export interface TargetAudience {
   year?: number;
   batch?: string;
   customGroupId?: string;
+  selectedIds?: string[];
 }
 
 // ─── Notice Types ─────────────────────────────────────────────────────────────

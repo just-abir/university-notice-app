@@ -1,4 +1,4 @@
-import React, { useState, useRef, useCallback, useEffect } from 'react';
+import React, { useState, useRef, useCallback, useEffect } from "react";
 import {
   View,
   Text,
@@ -9,21 +9,25 @@ import {
   ScrollView,
   TouchableOpacity,
   Alert,
-} from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
-import { router } from 'expo-router';
-import { useAuthStore } from '@/store/authStore';
-import { authAPI } from '@/services/api';
-import { registerForPushNotifications } from '@/services/pushNotifications';
-import { Input } from '@/components/ui/Input';
-import { Button } from '@/components/ui/Button';
-import { Colors, Typography, Spacing, BorderRadius } from '@/constants/colors';
+} from "react-native";
+import { LinearGradient } from "expo-linear-gradient";
+import { router } from "expo-router";
+import { useAuthStore } from "@/store/authStore";
+import { authAPI } from "@/services/api";
+import { registerForPushNotifications } from "@/services/pushNotifications";
+import { Input } from "@/components/ui/Input";
+import { Button } from "@/components/ui/Button";
+import { Colors, Typography, Spacing, BorderRadius } from "@/constants/colors";
 
 export default function LoginScreen() {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
-  const [errors, setErrors] = useState<{ email?: string; password?: string; general?: string }>({});
+  const [errors, setErrors] = useState<{
+    email?: string;
+    password?: string;
+    general?: string;
+  }>({});
 
   const { setAuth } = useAuthStore();
 
@@ -38,10 +42,22 @@ export default function LoginScreen() {
   useEffect(() => {
     // Entrance animations
     Animated.sequence([
-      Animated.timing(logoOpacity, { toValue: 1, duration: 600, useNativeDriver: true }),
+      Animated.timing(logoOpacity, {
+        toValue: 1,
+        duration: 600,
+        useNativeDriver: true,
+      }),
       Animated.parallel([
-        Animated.timing(formOpacity, { toValue: 1, duration: 500, useNativeDriver: true }),
-        Animated.timing(formSlide, { toValue: 0, duration: 500, useNativeDriver: true }),
+        Animated.timing(formOpacity, {
+          toValue: 1,
+          duration: 500,
+          useNativeDriver: true,
+        }),
+        Animated.timing(formSlide, {
+          toValue: 0,
+          duration: 500,
+          useNativeDriver: true,
+        }),
       ]),
     ]).start();
 
@@ -49,9 +65,17 @@ export default function LoginScreen() {
     const animateOrb = (anim: Animated.Value, delay: number) =>
       Animated.loop(
         Animated.sequence([
-          Animated.timing(anim, { toValue: 1, duration: 3000 + delay, useNativeDriver: true }),
-          Animated.timing(anim, { toValue: 0, duration: 3000 + delay, useNativeDriver: true }),
-        ])
+          Animated.timing(anim, {
+            toValue: 1,
+            duration: 3000 + delay,
+            useNativeDriver: true,
+          }),
+          Animated.timing(anim, {
+            toValue: 0,
+            duration: 3000 + delay,
+            useNativeDriver: true,
+          }),
+        ]),
       ).start();
 
     animateOrb(orb1, 0);
@@ -65,9 +89,9 @@ export default function LoginScreen() {
 
   const validate = useCallback(() => {
     const errs: typeof errors = {};
-    if (!email.trim()) errs.email = 'Email is required';
-    else if (!/\S+@\S+\.\S+/.test(email)) errs.email = 'Enter a valid email';
-    if (!password) errs.password = 'Password is required';
+    if (!email.trim()) errs.email = "Email is required";
+    else if (!/\S+@\S+\.\S+/.test(email)) errs.email = "Enter a valid email";
+    if (!password) errs.password = "Password is required";
     setErrors(errs);
     return Object.keys(errs).length === 0;
   }, [email, password]);
@@ -90,14 +114,16 @@ export default function LoginScreen() {
 
       // Navigate based on role and mustChangePassword flag
       if (data.user.mustChangePassword) {
-        router.replace('/(auth)/change-password');
-      } else if (data.user.role === 'TEACHER') {
-        router.replace('/(teacher)/');
-      } else if (data.user.role === 'STUDENT') {
-        router.replace('/(student)/');
+        router.replace("/(auth)/change-password");
+      } else if (data.user.role === "TEACHER") {
+        router.replace("/(teacher)/");
+      } else if (data.user.role === "STUDENT") {
+        router.replace("/(student)/");
       }
     } catch (error: any) {
-      const msg = error?.response?.data?.message || 'Login failed. Please check your credentials.';
+      const msg =
+        error?.response?.data?.message ||
+        "Login failed. Please check your credentials.";
       setErrors({ general: msg });
     } finally {
       setLoading(false);
@@ -106,26 +132,29 @@ export default function LoginScreen() {
 
   const handleForgotPassword = () => {
     if (!email.trim()) {
-      Alert.alert('Enter Email', 'Please enter your email address first, then tap Forgot Password.');
+      Alert.alert(
+        "Enter Email",
+        "Please enter your email address first, then tap Forgot Password.",
+      );
       return;
     }
     Alert.alert(
-      'Reset Password',
+      "Reset Password",
       `Send a password reset link to:\n${email.trim()}?`,
       [
-        { text: 'Cancel', style: 'cancel' },
+        { text: "Cancel", style: "cancel" },
         {
-          text: 'Send',
+          text: "Send",
           onPress: async () => {
             try {
               await authAPI.forgotPassword(email.trim());
-              Alert.alert('Email Sent', 'Check your inbox for a reset link.');
+              Alert.alert("Email Sent", "Check your inbox for a reset link.");
             } catch {
-              Alert.alert('Error', 'Could not send reset email.');
+              Alert.alert("Error", "Could not send reset email.");
             }
           },
         },
-      ]
+      ],
     );
   };
 
@@ -133,18 +162,36 @@ export default function LoginScreen() {
     <View style={styles.root}>
       {/* Background gradient */}
       <LinearGradient
-        colors={['#0F0F1A', '#1A1A2E', '#0F0F1A']}
+        colors={["#0F0F1A", "#1A1A2E", "#0F0F1A"]}
         style={StyleSheet.absoluteFillObject}
       />
 
       {/* Floating orbs */}
-      <Animated.View style={[styles.orb, styles.orb1, { transform: [{ translateY: orb1Y }] }]} />
-      <Animated.View style={[styles.orb, styles.orb2, { transform: [{ translateY: orb2Y }] }]} />
-      <Animated.View style={[styles.orb, styles.orb3, { transform: [{ translateY: orb3Y }] }]} />
+      <Animated.View
+        style={[
+          styles.orb,
+          styles.orb1,
+          { transform: [{ translateY: orb1Y }] },
+        ]}
+      />
+      <Animated.View
+        style={[
+          styles.orb,
+          styles.orb2,
+          { transform: [{ translateY: orb2Y }] },
+        ]}
+      />
+      <Animated.View
+        style={[
+          styles.orb,
+          styles.orb3,
+          { transform: [{ translateY: orb3Y }] },
+        ]}
+      />
 
       <KeyboardAvoidingView
         style={styles.kav}
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
       >
         <ScrollView
           contentContainerStyle={styles.scroll}
@@ -156,8 +203,11 @@ export default function LoginScreen() {
             <View style={styles.logoIconBg}>
               <Text style={styles.logoIcon}>🎓</Text>
             </View>
+
             <Text style={styles.logoTitle}>CSE NOTICE</Text>
-            <Text style={styles.logoSubtitle}>Department of Computer Science & Engineering</Text>
+            <Text style={styles.logoSubtitle}>
+              Department of Computer Science & Engineering
+            </Text>
             <View style={styles.logoDivider} />
           </Animated.View>
 
@@ -200,7 +250,10 @@ export default function LoginScreen() {
               onSubmitEditing={handleLogin}
             />
 
-            <TouchableOpacity onPress={handleForgotPassword} style={styles.forgotBtn}>
+            <TouchableOpacity
+              onPress={handleForgotPassword}
+              style={styles.forgotBtn}
+            >
               <Text style={styles.forgotText}>Forgot Password?</Text>
             </TouchableOpacity>
 
@@ -229,16 +282,34 @@ export default function LoginScreen() {
 const styles = StyleSheet.create({
   root: { flex: 1, backgroundColor: Colors.background },
   kav: { flex: 1 },
-  scroll: { flexGrow: 1, justifyContent: 'center', padding: Spacing.lg },
+  scroll: { flexGrow: 1, justifyContent: "center", padding: Spacing.lg },
 
   // Orbs
-  orb: { position: 'absolute', borderRadius: 999, opacity: 0.12 },
-  orb1: { width: 260, height: 260, backgroundColor: Colors.primary, top: -60, right: -80 },
-  orb2: { width: 200, height: 200, backgroundColor: Colors.secondary, bottom: 80, left: -60 },
-  orb3: { width: 140, height: 140, backgroundColor: Colors.primary, top: '40%', right: 20 },
+  orb: { position: "absolute", borderRadius: 999, opacity: 0.12 },
+  orb1: {
+    width: 260,
+    height: 260,
+    backgroundColor: Colors.primary,
+    top: -60,
+    right: -80,
+  },
+  orb2: {
+    width: 200,
+    height: 200,
+    backgroundColor: Colors.secondary,
+    bottom: 80,
+    left: -60,
+  },
+  orb3: {
+    width: 140,
+    height: 140,
+    backgroundColor: Colors.primary,
+    top: "40%",
+    right: 20,
+  },
 
   // Logo
-  logoSection: { alignItems: 'center', marginBottom: Spacing.xl },
+  logoSection: { alignItems: "center", marginBottom: Spacing.xl },
   logoIconBg: {
     width: 80,
     height: 80,
@@ -246,10 +317,11 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.primaryGhost,
     borderWidth: 1,
     borderColor: Colors.primary,
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
     marginBottom: Spacing.md,
   },
+
   logoIcon: { fontSize: 38 },
   logoTitle: {
     fontSize: Typography.fontSizes.xxl,
@@ -260,7 +332,7 @@ const styles = StyleSheet.create({
   logoSubtitle: {
     fontSize: Typography.fontSizes.sm,
     color: Colors.textMuted,
-    textAlign: 'center',
+    textAlign: "center",
     marginTop: 6,
     lineHeight: 18,
   },
@@ -300,7 +372,7 @@ const styles = StyleSheet.create({
     marginBottom: Spacing.md,
   },
   errorBoxText: { color: Colors.error, fontSize: Typography.fontSizes.sm },
-  forgotBtn: { alignSelf: 'flex-end', marginBottom: Spacing.md, marginTop: -4 },
+  forgotBtn: { alignSelf: "flex-end", marginBottom: Spacing.md, marginTop: -4 },
   forgotText: {
     color: Colors.primary,
     fontSize: Typography.fontSizes.sm,
@@ -315,7 +387,7 @@ const styles = StyleSheet.create({
   credNoteText: {
     fontSize: Typography.fontSizes.xs,
     color: Colors.textMuted,
-    textAlign: 'center',
+    textAlign: "center",
     lineHeight: 16,
   },
 });

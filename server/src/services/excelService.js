@@ -15,7 +15,7 @@ const findField = (row, variants) => {
 
 /**
  * Parse a Student Excel sheet.
- * Expected columns: Name, Roll, RegistrationNo, Batch, Year, Semester, Gender, Email
+ * Expected columns: Name, Roll, RegistrationNo, Batch, Year, Semester, Gender, Email, Phone, Address
  *
  * @param {Buffer} buffer - Excel file buffer
  * @returns {{ valid: Array, invalid: Array }}
@@ -40,6 +40,8 @@ const parseStudentExcel = (buffer) => {
     const yearRaw = findField(row, ['year', 'currentyear', 'studyyear']);
     const semesterRaw = findField(row, ['semester', 'sem', 'currentsemester']);
     const genderRaw = String(findField(row, ['gender', 'sex']) || '').trim().toUpperCase();
+    const phone = String(findField(row, ['phone', 'phonenumber', 'mobile', 'mobilenumber', 'contact', 'contactnumber']) || '').trim();
+    const address = String(findField(row, ['address', 'homeaddress', 'permanentaddress', 'presentaddress']) || '').trim();
 
     const errors = [];
 
@@ -75,6 +77,8 @@ const parseStudentExcel = (buffer) => {
         year: isNaN(year) ? undefined : year,
         semester: semesterRaw ? parseInt(semesterRaw, 10) || undefined : undefined,
         gender,
+        phone: phone || undefined,
+        address: address || undefined,
       });
     }
   });

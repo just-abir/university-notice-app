@@ -18,7 +18,7 @@ const searchStudents = async (req, res) => {
 
   const [students, total] = await Promise.all([
     User.find(query)
-      .select('name roll year batch semester gender email profilePicture registrationNo')
+      .select('name roll year batch semester gender email profilePicture registrationNo phone address')
       .sort({ year: 1, roll: 1 })
       .skip(skip)
       .limit(lim),
@@ -36,6 +36,41 @@ const searchStudents = async (req, res) => {
         pages: Math.ceil(total / lim),
         hasMore: skip + students.length < total,
       },
+    },
+  });
+};
+
+// ── GET /api/students/by-year ─────────────────────────────────────────────────
+// Returns all students for the given year(s). Accepts ?years=1,2,3
+const getStudentsByYear = async (req, res) => {
+  const { years } = req.query;
+
+  if (!years) {
+    return res.status(400).json({ success: false, message: 'years query parameter is required (e.g. ?years=1,2,3)' });
+  }
+
+  const yearList = String(years)
+    .split(',')
+    .map((y) => parseInt(y.trim(), 10))
+    .filter((y) => y >= 1 && y <= 5);
+
+  if (yearList.length === 0) {
+    return res.status(400).json({ success: false, message: 'At least one valid year (1-5) is required' });
+  }
+
+  const students = await User.find({
+    role: 'STUDENT',
+    isActive: true,
+    year: { $in: yearList },
+  })
+    .select('name roll year batch semester gender email profilePicture registrationNo phone address')
+    .sort({ year: 1, roll: 1 });
+
+  res.status(200).json({
+    success: true,
+    data: {
+      students,
+      total: students.length,
     },
   });
 };
@@ -71,4 +106,4 @@ const resolveAudience = async (req, res) => {
   });
 };
 
-module.exports = { searchStudents, resolveAudience };
+module.exports = { searchStudents, getStudentsByYear, resolveAudience };

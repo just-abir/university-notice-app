@@ -32,6 +32,7 @@ const getAudienceLabel = (notice: Notice): string => {
     ALL_CSE: 'All CSE Students',
     ALL_CSE_FEMALE: 'All CSE Female Students',
     CUSTOM_GROUP: 'Custom Group',
+    SELECTED_STUDENTS: 'Selected Students',
   };
   return labels[t ?? ''] ?? 'Selected Students';
 };

@@ -1,4 +1,4 @@
-export const API_BASE_URL = "http://192.168.0.87:5000/api";
+export const API_BASE_URL = "http://192.168.0.192:5000/api";
 // Note: Use 10.0.2.2 for Android Emulator, localhost for iOS Simulator
 // For physical devices, use your machine's local IP: http://192.168.x.x:5000/api
 
@@ -32,6 +32,7 @@ export const ENDPOINTS = {
 
   // ── Students ─────────────────────────────────────────────────────────────────
   SEARCH_STUDENTS: "/students/search",
+  STUDENTS_BY_YEAR: "/students/by-year",
   RESOLVE_AUDIENCE: "/students/resolve-audience",
 
   // ── Admin / Groups ────────────────────────────────────────────────────────────

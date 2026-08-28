@@ -213,6 +213,11 @@ export const studentsAPI = {
     api
       .post(ENDPOINTS.RESOLVE_AUDIENCE, { targetAudience })
       .then((r) => extractData<{ count: number; sample: User[]; hasMore: boolean }>(r)),
+
+  getByYear: (years: number[]) =>
+    api
+      .get(ENDPOINTS.STUDENTS_BY_YEAR, { params: { years: years.join(',') } })
+      .then((r) => extractData<{ students: User[]; total: number }>(r)),
 };
 
 // ═════════════════════════════════════════════════════════════════════════════

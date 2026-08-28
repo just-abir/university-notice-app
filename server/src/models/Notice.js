@@ -44,13 +44,14 @@ const noticeSchema = new mongoose.Schema(
         type: String,
         enum: {
           values: [
-            'SPECIFIC_ROLL',    // Specific student roll(s)
-            'ROLL_RANGE',       // Range of rolls (rollStart to rollEnd)
-            'YEAR_ALL',         // All students of a specific year
-            'YEAR_FEMALE',      // All female students of a specific year
-            'ALL_CSE',          // All CSE students
-            'ALL_CSE_FEMALE',   // All CSE female students
-            'CUSTOM_GROUP',     // A teacher-defined custom group
+            'SPECIFIC_ROLL',      // Specific student roll(s)
+            'ROLL_RANGE',         // Range of rolls (rollStart to rollEnd)
+            'YEAR_ALL',           // All students of a specific year
+            'YEAR_FEMALE',        // All female students of a specific year
+            'ALL_CSE',            // All CSE students
+            'ALL_CSE_FEMALE',     // All CSE female students
+            'CUSTOM_GROUP',       // A teacher-defined custom group
+            'SELECTED_STUDENTS',  // Teacher hand-picked individual students
           ],
           message: 'Invalid audience type',
         },
@@ -65,6 +66,12 @@ const noticeSchema = new mongoose.Schema(
         type: mongoose.Schema.Types.ObjectId,
         ref: 'StudentGroup',
       },
+      selectedIds: [                               // For SELECTED_STUDENTS
+        {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: 'User',
+        },
+      ],
     },
 
     // ── Recipients ─────────────────────────────────────────────────────────────

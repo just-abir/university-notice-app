@@ -87,6 +87,17 @@ const userSchema = new mongoose.Schema(
       max: [10, 'Semester cannot exceed 10'],
     },
 
+    phone: {
+      type: String,
+      trim: true,
+      default: null,
+    },
+    address: {
+      type: String,
+      trim: true,
+      default: null,
+    },
+
     // ── Teacher-Only Fields ────────────────────────────────────────────────────
     designation: {
       type: String,

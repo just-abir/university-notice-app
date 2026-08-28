@@ -46,11 +46,15 @@ export default function ComposeScreen() {
 
   const handleAudienceChange = useCallback(async (a: TargetAudience) => {
     setAudience(a);
-    try {
-      const data = await studentsAPI.resolveAudience(a);
-      setRecipientCount(data.count);
-    } catch {
-      setRecipientCount(null);
+    if (a.type === 'SELECTED_STUDENTS') {
+      setRecipientCount(a.selectedIds ? a.selectedIds.length : 0);
+    } else {
+      try {
+        const data = await studentsAPI.resolveAudience(a);
+        setRecipientCount(data.count);
+      } catch {
+        setRecipientCount(null);
+      }
     }
   }, []);
 
@@ -59,7 +63,9 @@ export default function ComposeScreen() {
     if (!title.trim()) errs.title = 'Notice title is required';
     if (noticeType === 'TEXT' && !body.trim()) errs.body = 'Notice body is required for text notices';
     if (noticeType === 'PDF' && !pdfFile) errs.pdf = 'Please select a PDF file';
-    if (!audience) errs.audience = 'Please select a target audience';
+    if (!audience || (audience.type === 'SELECTED_STUDENTS' && (!audience.selectedIds || audience.selectedIds.length === 0))) {
+      errs.audience = 'Please select at least one recipient student';
+    }
     setErrors(errs);
     return Object.keys(errs).length === 0;
   }, [title, body, noticeType, pdfFile, audience]);
@@ -133,7 +139,7 @@ export default function ComposeScreen() {
         <View style={styles.fieldGroup}>
           <Text style={styles.fieldLabel}>Notice Title *</Text>
           <TextInput
-            style={[styles.titleInput, errors.title && styles.inputError]}
+            style={[styles.titleInput, !!errors.title && styles.inputError]}
             placeholder="Enter a clear, concise title..."
             placeholderTextColor={Colors.textMuted}
             value={title}
@@ -169,7 +175,7 @@ export default function ComposeScreen() {
           <View style={styles.fieldGroup}>
             <Text style={styles.fieldLabel}>Message Body *</Text>
             <TextInput
-              style={[styles.bodyInput, errors.body && styles.inputError]}
+              style={[styles.bodyInput, !!errors.body && styles.inputError]}
               placeholder="Write your notice message here..."
               placeholderTextColor={Colors.textMuted}
               value={body}
@@ -187,7 +193,7 @@ export default function ComposeScreen() {
         {noticeType === 'PDF' && (
           <View style={styles.fieldGroup}>
             <Text style={styles.fieldLabel}>PDF File *</Text>
-            <TouchableOpacity style={[styles.pdfPicker, errors.pdf && styles.inputError]} onPress={handlePickPDF}>
+            <TouchableOpacity style={[styles.pdfPicker, !!errors.pdf && styles.inputError]} onPress={handlePickPDF}>
               {pdfFile ? (
                 <View style={styles.pdfSelected}>
                   <Ionicons name="document-text" size={22} color={Colors.warning} />
@@ -226,7 +232,7 @@ export default function ComposeScreen() {
 
         {/* Audience Picker */}
         <View style={styles.fieldGroup}>
-          <AudiencePicker value={audience} onChange={handleAudienceChange} groups={groups} />
+          <AudiencePicker value={audience} onChange={handleAudienceChange} />
           {errors.audience && <Text style={styles.errorText}>{errors.audience}</Text>}
         </View>
 

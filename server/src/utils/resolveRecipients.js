@@ -72,6 +72,17 @@ const resolveRecipients = async (targetAudience) => {
       break;
     }
 
+    case 'SELECTED_STUDENTS': {
+      const { selectedIds } = targetAudience;
+      if (!selectedIds || selectedIds.length === 0) return [];
+      users = await User.find({
+        _id: { $in: selectedIds },
+        role: 'STUDENT',
+        isActive: true,
+      });
+      break;
+    }
+
     default:
       return [];
   }
@@ -104,6 +115,10 @@ const describeAudience = (targetAudience) => {
       return 'All CSE Female Students';
     case 'CUSTOM_GROUP':
       return 'Custom Group';
+    case 'SELECTED_STUDENTS': {
+      const count = targetAudience.selectedIds ? targetAudience.selectedIds.length : 0;
+      return `${count} Manually Selected Student${count !== 1 ? 's' : ''}`;
+    }
     default:
       return 'Unknown Audience';
   }

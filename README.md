@@ -183,6 +183,125 @@ graph TD
 
 ---
 
+## 🏛️ System Architecture
+
+The application adopts a **Decoupled Client-Server Architecture** with a mobile client frontend (React Native / Expo Router) communicating via a secure RESTful API with a Node.js/Express backend connected to a MongoDB database.
+
+```mermaid
+graph TD
+    A[Client: Expo React Native App] -->|HTTPS / REST API + JWT| B[Server: Node.js / Express API]
+    B -->|Mongoose ORM| C[(Database: MongoDB)]
+    B -->|Push Notification Service| D[Expo Push API]
+    B -->|SMTP Email Service| E[Nodemailer / Gmail]
+    B -->|File Uploads| F[Cloudinary CDN]
+    D -->|Mobile Push| A
+    E -->|Email Notifications| G[Student Email Inbox]
+```
+
+```text
+                     +----------------------------------+
+                     |  Expo React Native Mobile App    |
+                     |  (Student / Teacher / Admin UI)  |
+                     +-----------------+----------------+
+                                       |
+                                HTTP / HTTPS (REST API)
+                                (JWT Authentication)
+                                       |
+                                       v
+                     +----------------------------------+
+                     |       Node.js / Express API      |
+                     |           (Backend)              |
+                     +----+------------+-----------+----+
+                          |            |           |
+       +------------------+            |           +------------------+
+       |                               |                              |
+       v                               v                              v
++---------------+             +-----------------+            +------------------+
+| MongoDB Atlas |             | Expo Push API   |            | SMTP Email Server|
+| (Database)    |             | (Mobile Push)   |            | (Nodemailer)     |
++---------------+             +-----------------+            +------------------+
+```
+
+---
+
+## 🔄 End-to-End System Workflows
+
+### 1️⃣ Authentication & Authorization Workflow
+```text
+[ User Inputs Credentials ] ➔ [ POST /api/auth/login ] ➔ [ Validate Password (Bcrypt) ]
+                                                                   │
+                                                                   ▼
+[ Navigate to Role Layout ] ⬅️ [ Return User Profile + JWT ] ⬅️ [ Generate JWT Token ]
+```
+1. **Login:** User logs in using Email/Roll Number and Password.
+2. **Validation:** Server verifies hashed password using `bcrypt`.
+3. **Token Dispatch:** Issues a short-lived **Access Token (15m)** and a **Refresh Token (7d)**.
+4. **Role Redirection:** Client routes the user based on role:
+   - Students ➔ `(student)` route layout
+   - Teachers & Admins ➔ `(teacher)` route layout
+
+---
+
+### 2️⃣ Targeted Notice Creation & Multi-Channel Delivery
+```text
+[ Teacher Creates Notice ]
+            │
+            ▼
+[ Select Target Audience ] ➔ (Department / Year / Batch / Roll Range / Custom Group)
+            │
+            ▼
+[ POST /api/notices ] ➔ [ Save to MongoDB (Notice Schema) ]
+            │
+            ├───────────────────────────────────────────────┐
+            ▼                                               ▼
+[ resolveRecipients Service ]                   [ Send Push Notifications ]
+(Queries target student IDs & tokens)            (via Expo Push Notification API)
+            │
+            ▼
+[ Send Email Alerts ]
+(via Nodemailer / emailService.js)
+```
+1. **Notice Composition:** Teacher inputs title, content, attachments, and selects the audience criteria via `AudiencePicker`.
+2. **Audience Resolution (`resolveRecipients.js`):** System calculates matching student IDs.
+3. **Storage:** Saves the notice in MongoDB database.
+4. **Multicast Notification:**
+   - Sends real-time Push Notifications via Expo Push Service.
+   - Dispatches Email alerts via Nodemailer for offline/email notification preferences.
+
+---
+
+### 3️⃣ Notice Consumption & Read Receipt Tracking
+```text
+[ Student Opens App ] ➔ [ GET /api/notices/feed ] ➔ [ Display Targeted Feed ]
+                                                            │
+                                                            ▼
+[ Admin Views Read Stats ] ⬅️ [ Update DB (readBy Array) ] ⬅️ [ Student Taps Notice ]
+```
+1. **Targeted Feed:** Students view notices matching their year, department, or section.
+2. **Read Status Update:** When a student opens a notice detail view, `POST /api/notices/:id/read` marks their ID in the `readBy` array with a timestamp.
+3. **Analytics:** Teachers/Admins track real-time read statistics (e.g., *45 out of 60 read*) with breakdown progress bars.
+
+---
+
+### 4️⃣ Bulk User Onboarding Workflow
+```text
+[ Admin Uploads Excel File ] ➔ [ POST /api/admin/import/students ]
+                                            │
+                                            ▼
+                              [ excelService.js Parses File ]
+                                            │
+                                            ▼
+                              [ Bulk Upsert Users into MongoDB ]
+                                            │
+                                            ▼
+                              [ Email Credentials to Students ]
+```
+1. Admin uploads an Excel file (`.xlsx`) containing student or teacher records.
+2. `excelService.js` parses the file and performs bulk MongoDB upserts.
+3. Accounts are generated with temporary passwords and emailed to recipients.
+
+---
+
 ## 🖥️ Server
 
 ### Tech Stack
@@ -324,13 +443,14 @@ npx expo start
 
 | Type | Description |
 |---|---|
-| `SPECIFIC_ROLL` | One or more specific roll numbers |
-| `ROLL_RANGE` | All students between roll A and roll B |
-| `YEAR_ALL` | All students of a specific year (1–5) |
-| `YEAR_FEMALE` | Female students of a specific year |
-| `ALL_CSE` | Every active CSE student |
-| `ALL_CSE_FEMALE` | All female CSE students |
+| `SELECTED_STUDENTS` | Manually selected students from interactive year table |
 | `CUSTOM_GROUP` | A teacher-defined named group |
+| `SPECIFIC_ROLL` | One or more specific roll numbers (API legacy) |
+| `ROLL_RANGE` | All students between roll A and roll B (API legacy) |
+| `YEAR_ALL` | All students of a specific year (1–5) (API legacy) |
+| `YEAR_FEMALE` | Female students of a specific year (API legacy) |
+| `ALL_CSE` | Every active CSE student (API legacy) |
+| `ALL_CSE_FEMALE` | All female CSE students (API legacy) |
 
 ---
 
